@@ -102,9 +102,18 @@ test('failed and conflicting saves preserve the draft and require explicit reapp
 test('offline editing is explicitly disabled', async ({ page, context }) => {
   await mockBackend(page)
   await expect(page.getByRole('heading', { name: 'Sample trip', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'day', exact: true }).click()
   await context.setOffline(true)
   await expect(page.getByText('You’re offline.', { exact: false })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Add to our plan' })).toBeDisabled()
   await context.setOffline(false)
   await expect(page.getByRole('button', { name: 'Add to our plan' })).toBeEnabled()
+})
+test('a calendar loading failure preserves access to the loaded daily agenda', async ({ page }) => {
+  await page.route('**/src/features/calendar/Calendar.tsx*', route => route.abort('failed'))
+  await mockBackend(page)
+  await page.getByRole('button', { name: 'week', exact: true }).click()
+  await expect(page.getByRole('alert')).toContainText('This view could not load.')
+  await page.getByRole('button', { name: 'day', exact: true }).click()
+  await expect(page.getByRole('heading', { name: 'Sample ferry' })).toBeVisible()
 })

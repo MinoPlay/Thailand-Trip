@@ -27,8 +27,8 @@ test('real shared trip synchronizes between two browser sessions', async ({ brow
     }
     const a = await first.newPage(), b = await second.newPage()
     await Promise.all([a.goto(baseURL!), b.goto(baseURL!)])
-    await expect(a.getByRole('status')).toContainText('Live', { timeout: 20_000 })
-    await expect(b.getByRole('status')).toContainText('Live', { timeout: 20_000 })
+    await expect(a.getByRole('status').filter({ hasText: 'Live' })).toBeVisible({ timeout: 20_000 })
+    await expect(b.getByRole('status').filter({ hasText: 'Live' })).toBeVisible({ timeout: 20_000 })
     await b.getByRole('button', { name: 'Checklist', exact: true }).click()
     await a.getByRole('button', { name: 'Add to our plan' }).click()
     await a.getByRole('button', { name: 'Add checklist task' }).click()

@@ -7,6 +7,7 @@ import type { Item, ItemType, Note, Task, TripData, NewRecord } from '../lib/mod
 import { dateLabel, itemDate, onDay, shiftDay, today } from '../lib/time'
 import { tripWarnings } from '../lib/warnings'
 import { ErrorMessage } from '../components/Feedback'
+import { LoadBoundary } from '../components/LoadBoundary'
 import { Setup } from './Setup'
 import { ItemEditor } from '../features/itinerary/ItemEditor'
 import { ItemCard } from '../features/itinerary/ItemCard'
@@ -117,7 +118,7 @@ function PlannerContent({ data, online, live, refreshing, error, onRefresh, onCh
       {page === 'itinerary' && <div className="planner-grid">
         <section className="itinerary-main">
           <div className="section-title"><h2>Our itinerary</h2><div className="segmented" aria-label="Calendar view">{(['month', 'week', 'day'] as const).map(option => <button aria-pressed={view === option} key={option} onClick={() => setView(option)}>{option}</button>)}</div></div>
-          {view !== 'day' ? <Suspense fallback={<p role="status">Loading calendar…</p>}><Calendar view={view} date={date} zone={trip.timezone} items={items} onDate={date => { setDate(date); setView('day') }} onItem={item => { if (online) setEditor({ kind: 'item', type: item.type, item }) }} /></Suspense> : <>
+          {view !== 'day' ? <LoadBoundary><Suspense fallback={<p role="status">Loading calendar…</p>}><Calendar view={view} date={date} zone={trip.timezone} items={items} onDate={date => { setDate(date); setView('day') }} onItem={item => { if (online) setEditor({ kind: 'item', type: item.type, item }) }} /></Suspense></LoadBoundary> : <>
             <div className="date-nav"><button className="icon-button" aria-label="Previous day" onClick={() => setDate(shiftDay(date, -1))}><ChevronLeft size={20} /></button>
               <label><span className="sr-only">Selected day</span><input type="date" value={date} onChange={event => { if (event.target.value) setDate(event.target.value) }} /></label>
               <button className="icon-button" aria-label="Next day" onClick={() => setDate(shiftDay(date, 1))}><ChevronRight size={20} /></button><button className="text-button" onClick={() => setDate(today(trip.timezone))}>Today</button></div>
