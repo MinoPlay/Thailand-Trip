@@ -7,6 +7,16 @@ import type { BaseRecord, Records, Table } from './models'
 export function value(form: FormData, key: string) { return String(form.get(key) ?? '').trim() }
 export function nullable(form: FormData, key: string) { return value(form, key) || null }
 
+export function revealInvalidSection(event: FormEvent<HTMLFormElement>) {
+  const control = event.target
+  if (!(control instanceof HTMLElement)) return
+  const section = control.closest('details')
+  if (section) {
+    section.open = true
+    requestAnimationFrame(() => control.focus())
+  }
+}
+
 export function useVersionedForm<K extends Table>(table: K, original: Records[K] | undefined, onSaved: () => void) {
   const [base, setBase] = useState(original)
   const [formKey, setFormKey] = useState(0)

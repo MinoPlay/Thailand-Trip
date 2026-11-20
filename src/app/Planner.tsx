@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { BedDouble, CalendarDays, Check, ChevronLeft, ChevronRight, ClipboardList, FileText, LogOut, Palmtree, Plus, RefreshCw, Settings2, StickyNote, TriangleAlert, WifiOff } from 'lucide-react'
 import { client } from '../lib/supabase'
@@ -63,8 +63,24 @@ function PlannerContent({ data, online, live, refreshing, error, onRefresh, onCh
   const [view, setView] = useState<'day' | 'week' | 'month'>(() => matchMedia('(max-width: 700px)').matches ? 'day' : 'month')
   const [editor, setEditor] = useState<Editor | null>(null)
   const [addMenu, setAddMenu] = useState(false)
+  const [documentItemId, setDocumentItemId] = useState<string | null>(null)
   const [writeError, setWriteError] = useState('')
   const [saving, setSaving] = useState(false)
+  const addContainer = useRef<HTMLDivElement>(null)
+  const addTrigger = useRef<HTMLButtonElement>(null)
+  const attentionPanel = useRef<HTMLElement>(null)
+  useEffect(() => {
+    if (!addMenu) return
+    const pointerDown = (event: PointerEvent) => {
+      if (event.target instanceof Node && !addContainer.current?.contains(event.target)) setAddMenu(false)
+    }
+    const keyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') { setAddMenu(false); addTrigger.current?.focus() }
+    }
+    document.addEventListener('pointerdown', pointerDown)
+    document.addEventListener('keydown', keyDown)
+    return () => { document.removeEventListener('pointerdown', pointerDown); document.removeEventListener('keydown', keyDown) }
+  }, [addMenu])
   const warnings = tripWarnings(data)
   const doneTasks = tasks.filter(task => task.done).length
   const unscheduled = items.filter(item => !itemDate(item, trip.timezone))
@@ -72,6 +88,14 @@ function PlannerContent({ data, online, live, refreshing, error, onRefresh, onCh
   const stays = dayItems.filter(item => item.type === 'stay')
   const schedule = dayItems.filter(item => item.type !== 'stay').sort((a, b) => (a.starts_at ?? 'z').localeCompare(b.starts_at ?? 'z'))
   const saved = () => { setEditor(null); onChanged() }
+  function reviewWarnings() {
+    setPage('itinerary')
+    setView('day')
+    requestAnimationFrame(() => {
+      attentionPanel.current?.scrollIntoView({ block: 'center' })
+      attentionPanel.current?.focus()
+    })
+  }
   async function write(operation: () => Promise<unknown>) {
     if (!online) { setWriteError('You are offline. Reconnect before making changes.'); return }
     setSaving(true); setWriteError('')
@@ -81,7 +105,7 @@ function PlannerContent({ data, online, live, refreshing, error, onRefresh, onCh
   }
   const card = (item: Item) => <ItemCard key={item.id} item={item} date={date} notes={notes.filter(note => note.item_id === item.id)} files={attachments.filter(file => file.item_id === item.id)}
     online={online && !saving} onEdit={() => setEditor({ kind: 'item', type: item.type, item })}
-    onNote={note => setEditor({ kind: 'note', note, itemId: item.id })} onFiles={() => setPage('documents')}
+    onNote={note => setEditor({ kind: 'note', note, itemId: item.id })} onFiles={() => { setDocumentItemId(item.id); setPage('documents') }}
     onComplete={() => void write(() => saveItem({ ...fields(item), preparation: item.preparation === 'done' ? 'to_prepare' : 'done' } satisfies NewRecord<Item>, item))} />
   const taskRow = (task: Task) => <div className={`task-row ${task.done ? 'completed' : ''}`} key={task.id}>
     <input type="checkbox" checked={task.done} disabled={!online || saving} aria-label={`Mark ${task.title} ${task.done ? 'not done' : 'done'}`}
@@ -103,22 +127,22 @@ function PlannerContent({ data, online, live, refreshing, error, onRefresh, onCh
       {(writeError || error) && <ErrorMessage>{writeError || `Could not refresh the shared plan: ${error}`}</ErrorMessage>}
       <section className="trip-hero">
         <div><p className="eyebrow">OUR NEXT CHAPTER</p><h1>{trip.title}</h1><p className="trip-dates"><CalendarDays size={16} /> {dateLabel(trip.start_date, { day: 'numeric', month: 'long' })} – {dateLabel(trip.end_date, { day: 'numeric', month: 'long', year: 'numeric' })}<span className="timezone">{trip.timezone}</span></p></div>
-        <div className="add-container"><button className="primary" disabled={!online} aria-expanded={addMenu} onClick={() => setAddMenu(!addMenu)}><Plus size={18} /> Add to our plan</button>
-          {addMenu && <div className="add-menu panel" role="group" aria-label="Choose what to add">{(['stay', 'transfer', 'activity'] as const).map(type => <button key={type} onClick={() => { setEditor({ kind: 'item', type }); setAddMenu(false) }}>Add {type}</button>)}<button onClick={() => { setEditor({ kind: 'task' }); setAddMenu(false) }}>Add checklist task</button><button onClick={() => { setEditor({ kind: 'note' }); setAddMenu(false) }}>Add note</button></div>}
+        <div className="add-container" ref={addContainer}><button ref={addTrigger} className="primary" disabled={!online} aria-expanded={addMenu} aria-controls="add-menu" onClick={() => setAddMenu(!addMenu)}><Plus size={18} /> Add to our plan</button>
+          {addMenu && <div id="add-menu" className="add-menu panel" role="group" aria-label="Choose what to add">{(['stay', 'transfer', 'activity'] as const).map(type => <button key={type} onClick={() => { setEditor({ kind: 'item', type }); setAddMenu(false) }}>Add {type}</button>)}<button onClick={() => { setEditor({ kind: 'task' }); setAddMenu(false) }}>Add checklist task</button><button onClick={() => { setEditor({ kind: 'note' }); setAddMenu(false) }}>Add note</button></div>}
         </div>
       </section>
       <div className="summary-grid">
         <button className="summary-card" onClick={() => setPage('checklist')}><span className="summary-icon"><ClipboardList size={20} /></span><span><strong>{doneTasks}<span className="muted"> / {tasks.length}</span></strong><small>preparations done</small></span><div className="mini-progress"><span style={{ width: `${tasks.length ? doneTasks / tasks.length * 100 : 0}%` }} /></div></button>
-        <button className="summary-card" onClick={() => { setPage('itinerary'); setView('day') }}><span className="summary-icon amber"><TriangleAlert size={20} /></span><span><strong>{warnings.length}</strong><small>things to review</small></span></button>
-        <button className="summary-card" onClick={() => setPage('documents')}><span className="summary-icon blue"><FileText size={20} /></span><span><strong>{attachments.filter(file => file.status === 'ready').length}</strong><small>tickets & documents</small></span></button>
+        <button className="summary-card" aria-label={`${warnings.length} things to review`} onClick={reviewWarnings}><span className="summary-icon amber"><TriangleAlert size={20} /></span><span><strong>{warnings.length}</strong><small>things to review</small></span></button>
+        <button className="summary-card" onClick={() => { setDocumentItemId(null); setPage('documents') }}><span className="summary-icon blue"><FileText size={20} /></span><span><strong>{attachments.filter(file => file.status === 'ready').length}</strong><small>tickets & documents</small></span></button>
       </div>
       <nav className="page-tabs" aria-label="Trip sections">{([
         ['itinerary', CalendarDays, 'Itinerary'], ['checklist', ClipboardList, 'Checklist'], ['notes', StickyNote, 'Notes'], ['documents', FileText, 'Documents'],
-      ] as const).map(([id, Icon, label]) => <button key={id} aria-current={page === id ? 'page' : undefined} onClick={() => setPage(id)}><Icon size={17} />{label}</button>)}</nav>
+      ] as const).map(([id, Icon, label]) => <button key={id} aria-current={page === id ? 'page' : undefined} onClick={() => { setPage(id); if (id === 'documents') setDocumentItemId(null) }}><Icon size={17} />{label}</button>)}</nav>
       {page === 'itinerary' && <div className="planner-grid">
         <section className="itinerary-main">
           <div className="section-title"><h2>Our itinerary</h2><div className="segmented" aria-label="Calendar view">{(['month', 'week', 'day'] as const).map(option => <button aria-pressed={view === option} key={option} onClick={() => setView(option)}>{option}</button>)}</div></div>
-          {view !== 'day' ? <LoadBoundary><Suspense fallback={<p role="status">Loading calendar…</p>}><Calendar view={view} date={date} zone={trip.timezone} items={items} onDate={date => { setDate(date); setView('day') }} onItem={item => { if (online) setEditor({ kind: 'item', type: item.type, item }) }} /></Suspense></LoadBoundary> : <>
+          {view !== 'day' ? <LoadBoundary><Suspense fallback={<p role="status">Loading calendar…</p>}><Calendar view={view} date={date} zone={trip.timezone} items={items} onDate={date => { setDate(date); setView('day') }} onNavigate={setDate} onItem={item => { if (online) setEditor({ kind: 'item', type: item.type, item }) }} /></Suspense></LoadBoundary> : <>
             <div className="date-nav"><button className="icon-button" aria-label="Previous day" onClick={() => setDate(shiftDay(date, -1))}><ChevronLeft size={20} /></button>
               <label><span className="sr-only">Selected day</span><input type="date" value={date} onChange={event => { if (event.target.value) setDate(event.target.value) }} /></label>
               <button className="icon-button" aria-label="Next day" onClick={() => setDate(shiftDay(date, 1))}><ChevronRight size={20} /></button><button className="text-button" onClick={() => setDate(today(trip.timezone))}>Today</button></div>
@@ -131,7 +155,7 @@ function PlannerContent({ data, online, live, refreshing, error, onRefresh, onCh
         <aside className="planning-sidebar">
           <section className="panel sidebar-panel"><div className="section-title"><h2><ClipboardList size={18} /> Still to prepare</h2><button className="icon-button" aria-label="Add task" disabled={!online} onClick={() => setEditor({ kind: 'task' })}><Plus size={17} /></button></div>
             {tasks.filter(task => !task.done).slice(0, 5).map(taskRow)}{!tasks.some(task => !task.done) && <p className="muted small">{tasks.length ? 'All checked off. Nice work!' : 'Add your first planning task.'}</p>}<button className="text-button" onClick={() => setPage('checklist')}>View full checklist →</button></section>
-          <section className="panel sidebar-panel warning-panel"><h2><TriangleAlert size={18} /> Needs a little attention</h2>{warnings.length ? <><div className="warning-list">{warnings.slice(0, 5).map(warning => <button key={warning.key} onClick={() => {
+          <section className="panel sidebar-panel warning-panel attention-panel" ref={attentionPanel} tabIndex={-1} aria-labelledby="attention-heading"><h2 id="attention-heading"><TriangleAlert size={18} /> Needs a little attention</h2>{warnings.length ? <><div className="warning-list">{warnings.slice(0, 5).map(warning => <button key={warning.key} onClick={() => {
             if (warning.itemId && online) { const item = items.find(item => item.id === warning.itemId); if (item) setEditor({ kind: 'item', type: item.type, item }) }
             else if (warning.taskId && online) setEditor({ kind: 'task', task: tasks.find(task => task.id === warning.taskId) })
             else if (warning.date) { setDate(warning.date); setView('day') }
@@ -145,7 +169,7 @@ function PlannerContent({ data, online, live, refreshing, error, onRefresh, onCh
       </div>}
       {page === 'checklist' && <section className="content-section"><div className="section-title"><div><p className="eyebrow">A LITTLE PREPARATION GOES A LONG WAY</p><h2>Our checklist</h2></div><button disabled={!online} onClick={() => setEditor({ kind: 'task' })}><Plus size={16} /> Add task</button></div><div className="panel checklist-panel">{tasks.length ? [...tasks].sort((a, b) => Number(a.done) - Number(b.done)).map(taskRow) : <div className="empty-state"><ClipboardList size={30} /><h3>Let’s get ready</h3><p>Add bookings, things to check, and reminders.</p></div>}</div></section>}
       {page === 'notes' && <section className="content-section"><div className="section-title"><div><p className="eyebrow">GOOD TO REMEMBER</p><h2>Our notes</h2></div><button disabled={!online} onClick={() => setEditor({ kind: 'note' })}><Plus size={16} /> Add note</button></div><div className="notes-grid">{notes.map(note => <button className="panel note-card" disabled={!online} key={note.id} onClick={() => setEditor({ kind: 'note', note })}><StickyNote size={18} /><p>{note.body}</p><small>{items.find(item => item.id === note.item_id)?.title ?? 'Whole trip'}</small></button>)}</div>{!notes.length && <div className="empty-state"><StickyNote size={28} /><h3>Save the little things</h3><p>Addresses, ideas, packing reminders — whatever helps.</p></div>}</section>}
-      {page === 'documents' && <section className="content-section"><Attachments files={attachments} items={items} tripId={trip.id} online={online} onChanged={onChanged} /></section>}
+      {page === 'documents' && <section className="content-section"><Attachments files={attachments} items={items} tripId={trip.id} online={online} selectedItemId={documentItemId ?? undefined} onShowAll={() => setDocumentItemId(null)} onChanged={onChanged} /></section>}
       <footer className="app-footer">Less planning in chat. More enjoying the trip.<span>All times shown with their itinerary time zone.</span></footer>
     </main>
     {editor?.kind === 'item' && <ItemEditor key={editor.item?.id ?? editor.type} item={editor.item} type={editor.type} tripId={trip.id} zone={trip.timezone} date={date} onClose={() => setEditor(null)} onSaved={saved} />}

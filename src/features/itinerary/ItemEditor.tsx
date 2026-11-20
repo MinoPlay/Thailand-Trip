@@ -1,7 +1,8 @@
 import { DateTime } from 'luxon'
+import type { ReactNode } from 'react'
 import { Modal } from '../../components/Modal'
 import { Field } from '../../components/Feedback'
-import { nullable, useVersionedForm, value } from '../../lib/forms'
+import { nullable, revealInvalidSection, useVersionedForm, value } from '../../lib/forms'
 import { deleteContent, saveItem } from '../../lib/api'
 import type { BookingStatus, Item, ItemType, Preparation } from '../../lib/models'
 import { localInput, safeUrl, toInstant } from '../../lib/time'
@@ -18,6 +19,15 @@ function preparation(value: string): Preparation {
   if (!result) throw new Error('Choose a valid preparation status.')
   return result
 }
+function filled(...values: (string | null | undefined)[]) {
+  return values.filter(value => Boolean(value?.trim())).length
+}
+function OptionalSection({ title, count, children }: { title: string; count: number; children: ReactNode }) {
+  return <details className="optional-section">
+    <summary>{title}<span className="section-count">{count ? `${count} filled` : 'Optional'}</span></summary>
+    <div className="section-content">{children}</div>
+  </details>
+}
 export function ItemEditor({ item, type, tripId, zone, date, onClose, onSaved }: {
   item?: Item; type: ItemType; tripId: string; zone: string; date: string; onClose: () => void; onSaved: () => void
 }) {
@@ -26,7 +36,7 @@ export function ItemEditor({ item, type, tripId, zone, date, onClose, onSaved }:
   const startZone = current?.start_zone ?? zone
   const endZone = current?.end_zone ?? zone
   return <Modal title={`${item ? 'Edit' : 'Add'} ${type}`} onClose={onClose}>
-    <form key={form.formKey} onSubmit={form.submit(async fields => {
+    <form key={form.formKey} onInvalidCapture={revealInvalidSection} onSubmit={form.submit(async fields => {
       const start_zone = value(fields, 'start_zone') || zone
       const end_zone = value(fields, 'end_zone') || zone
       const starts_at = type === 'stay' ? null : toInstant(value(fields, 'starts_at'), start_zone)
@@ -52,31 +62,52 @@ export function ItemEditor({ item, type, tripId, zone, date, onClose, onSaved }:
         {type === 'stay' ? <>
           <Field label="Check-in"><input type="date" name="check_in" defaultValue={current?.check_in ?? (item ? '' : date)} /></Field>
           <Field label="Check-out"><input type="date" name="check_out" defaultValue={current?.check_out ?? ''} /></Field>
+          <Field label="Place / area" wide><input name="location" defaultValue={current?.location} /></Field>
         </> : <>
           <Field label="Planning date (if time is unknown)" wide><input type="date" name="date" defaultValue={current?.date ?? (item ? '' : date)} /></Field>
           <Field label={type === 'transfer' ? 'Departure (local time)' : 'Start (local time)'}><input type="datetime-local" name="starts_at" defaultValue={localInput(current?.starts_at ?? null, startZone)} /></Field>
-          <Field label="Departure/start time zone"><input name="start_zone" defaultValue={startZone} list="zones" required /></Field>
           <Field label={type === 'transfer' ? 'Arrival (local time)' : 'End (local time)'}><input type="datetime-local" name="ends_at" defaultValue={localInput(current?.ends_at ?? null, endZone)} /></Field>
-          <Field label="Arrival/end time zone"><input name="end_zone" defaultValue={endZone} list="zones" required /></Field>
+          {type === 'transfer' ? <>
+            <Field label="From (include airport/station code)"><input name="origin" defaultValue={current?.origin} /></Field>
+            <Field label="To (include airport/station code)"><input name="destination" defaultValue={current?.destination} /></Field>
+            <Field label="Transport mode"><select name="mode" defaultValue={current?.mode || 'flight'}>{['flight', 'car', 'taxi', 'bus', 'train', 'ferry', 'walk', 'other'].map(mode => <option key={mode}>{mode}</option>)}</select></Field>
+          </> : <Field label="Place / area" wide><input name="location" defaultValue={current?.location} /></Field>}
         </>}
-        {type === 'transfer' ? <>
-          <Field label="From (include airport/station code)"><input name="origin" defaultValue={current?.origin} /></Field>
-          <Field label="To (include airport/station code)"><input name="destination" defaultValue={current?.destination} /></Field>
-          <Field label="Transport mode"><select name="mode" defaultValue={current?.mode || 'flight'}>{['flight', 'car', 'taxi', 'bus', 'train', 'ferry', 'walk', 'other'].map(mode => <option key={mode}>{mode}</option>)}</select></Field>
+      </div>
+      <OptionalSection title="Location & map" count={filled(current?.address, current?.map_url, type === 'transfer' ? current?.location : undefined)}>
+        {type === 'transfer' && <Field label="Place / area"><input name="location" defaultValue={current?.location} /></Field>}
+        <Field label="Address"><input name="address" defaultValue={current?.address} /></Field>
+        <Field label="Map link"><input name="map_url" type="url" defaultValue={current?.map_url} placeholder="https://maps.google.com/…" /></Field>
+      </OptionalSection>
+      {type === 'transfer' && <OptionalSection title="Time zones & journey details" count={filled(current?.flight_number, current?.journey_id) + Number(Boolean(current?.overnight)) + (current ? 2 : 0)}>
+        <div className="form-grid">
+          <Field label="Departure/start time zone"><input name="start_zone" defaultValue={startZone} list="zones" required /></Field>
+          <Field label="Arrival/end time zone"><input name="end_zone" defaultValue={endZone} list="zones" required /></Field>
           <Field label="Flight / service number"><input name="flight_number" defaultValue={current?.flight_number} /></Field>
           <Field label="Journey label (links connecting legs)"><input name="journey_id" defaultValue={current?.journey_id} placeholder="e.g. Outbound" /></Field>
           <label className="check-field"><input type="checkbox" name="overnight" defaultChecked={current?.overnight} /> Overnight in transit</label>
-        </> : <Field label="Place / area" wide><input name="location" defaultValue={current?.location} /></Field>}
-        <Field label="Address" wide><input name="address" defaultValue={current?.address} /></Field>
-        <Field label="Map link" wide><input name="map_url" type="url" defaultValue={current?.map_url} placeholder="https://maps.google.com/…" /></Field>
-        <Field label="Operator / accommodation"><input name="operator" defaultValue={current?.operator} /></Field>
-        <Field label="Booking agent / provider"><input name="provider" defaultValue={current?.provider} /></Field>
-        <Field label="Booking"><select name="booking_status" defaultValue={current?.booking_status ?? 'not_booked'}>{bookingValues.map(status => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}</select></Field>
-        <Field label="Preparation"><select name="preparation" defaultValue={current?.preparation ?? 'to_prepare'}>{preparationValues.map(status => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}</select></Field>
-        <Field label="Booking reference"><input name="booking_reference" defaultValue={current?.booking_reference} /></Field>
-        <Field label="Booking / confirmation link"><input name="booking_url" type="url" defaultValue={current?.booking_url} /></Field>
-        <Field label="Needs attention / reminder" wide><textarea name="attention" defaultValue={current?.attention} rows={2} placeholder="Anything still missing or worth remembering" /></Field>
-      </div>
+        </div>
+      </OptionalSection>}
+      {type !== 'stay' && type !== 'transfer' && <details className="optional-section">
+        <summary>Time zone details<span className="section-count">{current ? '2 filled' : 'Optional'}</span></summary>
+        <div className="form-grid">
+          <Field label="Start time zone"><input name="start_zone" defaultValue={startZone} list="zones" required /></Field>
+          <Field label="End time zone"><input name="end_zone" defaultValue={endZone} list="zones" required /></Field>
+        </div>
+      </details>}
+      <OptionalSection title="Booking & preparation" count={filled(current?.operator, current?.provider, current?.booking_reference, current?.booking_url) + (current ? 2 : 0)}>
+        <div className="form-grid">
+          <Field label="Operator / accommodation"><input name="operator" defaultValue={current?.operator} /></Field>
+          <Field label="Booking agent / provider"><input name="provider" defaultValue={current?.provider} /></Field>
+          <Field label="Booking"><select name="booking_status" defaultValue={current?.booking_status ?? 'not_booked'}>{bookingValues.map(status => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}</select></Field>
+          <Field label="Preparation"><select name="preparation" defaultValue={current?.preparation ?? 'to_prepare'}>{preparationValues.map(status => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}</select></Field>
+          <Field label="Booking reference"><input name="booking_reference" defaultValue={current?.booking_reference} /></Field>
+          <Field label="Booking / confirmation link"><input name="booking_url" type="url" defaultValue={current?.booking_url} /></Field>
+        </div>
+      </OptionalSection>
+      <OptionalSection title="Reminder" count={filled(current?.attention)}>
+        <Field label="Needs attention / reminder"><textarea name="attention" defaultValue={current?.attention} rows={2} placeholder="Anything still missing or worth remembering" /></Field>
+      </OptionalSection>
       <datalist id="zones">{['Asia/Bangkok', 'Europe/Copenhagen', 'Europe/Vienna', 'Asia/Ho_Chi_Minh', 'UTC'].map(zone => <option key={zone}>{zone}</option>)}</datalist>
       {form.feedback}
       <div className="form-actions">

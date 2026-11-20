@@ -8,14 +8,16 @@ import type { Item } from '../../lib/models'
 import { itemWarnings } from '../../lib/warnings'
 import { shiftDay, zonedDate } from '../../lib/time'
 
-export function Calendar({ items, zone, date, view, onDate, onItem }: { items: Item[]; zone: string; date: string; view: 'month' | 'week'; onDate: (date: string) => void; onItem: (item: Item) => void }) {
+export function Calendar({ items, zone, date, view, onDate, onNavigate, onItem }: { items: Item[]; zone: string; date: string; view: 'month' | 'week'; onDate: (date: string) => void; onNavigate: (date: string) => void; onItem: (item: Item) => void }) {
   const ref = useRef<FullCalendar>(null)
   const events = items.flatMap(item => {
     const start = item.type === 'stay' ? item.check_in : item.starts_at || item.date
     if (!start) return []
+    const typeLabel = item.type === 'stay' ? 'Stay' : item.type === 'transfer' ? 'Transfer' : 'Activity'
+    const needsAttention = itemWarnings(item).length > 0
     const main = {
       id: item.id,
-      title: `${item.type === 'transfer' ? '↗ ' : item.type === 'stay' ? '⌂ ' : '• '}${item.title}${itemWarnings(item).length ? ' ⚠' : ''}`,
+      title: `${typeLabel}: ${item.title}${needsAttention ? ' · Needs attention' : ''}`,
       start,
       end: item.type === 'stay' ? (item.check_out || shiftDay(start, 1)) : item.ends_at || undefined,
       allDay: item.type === 'stay' || !item.starts_at,
@@ -33,6 +35,10 @@ export function Calendar({ items, zone, date, view, onDate, onItem }: { items: I
       initialView={view === 'month' ? 'dayGridMonth' : 'timeGridWeek'}
       initialDate={date} timeZone={zone} firstDay={1}
       headerToolbar={{ left: 'prev,next', center: 'title', right: 'today' }}
+      datesSet={info => {
+        const currentDate = zonedDate(info.view.calendar.getDate().toISOString(), zone)
+        if (currentDate !== date) onNavigate(currentDate)
+      }}
       events={events} height="auto" dayMaxEvents={3} nowIndicator
       eventTimeFormat={{ hour: '2-digit', minute: '2-digit', hour12: false }}
       dateClick={info => onDate(info.dateStr.slice(0, 10))}

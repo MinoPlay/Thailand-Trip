@@ -13,3 +13,112 @@
 @media(max-width:480px){.trip-hero{display:block;margin-bottom:23px}.add-container{margin-top:20px}.add-container>.primary{width:100%;font-size:.85rem}.add-menu{left:0;right:0}.summary-card{flex-direction:column;align-items:flex-start;gap:9px;padding:12px}.summary-icon{width:28px;height:28px;border-radius:7px}.summary-card strong{font-size:1.2rem}.summary-grid{margin-bottom:22px}.page-tabs{gap:0;justify-content:space-between;margin-bottom:24px}.page-tabs button{font-size:.74rem;gap:5px}.page-tabs svg{width:14px}.header-actions .sync-status{position:absolute;top:68px;right:18px;font-size:.58rem}.app-header{height:61px}.main-content{padding-top:34px}.planning-sidebar{display:flex}.segmented button{padding:6px 12px}.item-card{padding:15px}.day-stay{padding:13px}.dialog-content{padding:20px;width:calc(100vw - 16px);max-height:94dvh;border-radius:12px}.form-grid{grid-template-columns:1fr;gap:0}.form-actions{flex-wrap:wrap}.form-actions>button{flex:1}.form-actions>.danger{flex-basis:100%}.setup-card{padding:25px}.setup-page{padding:20px 12px}.auth-card h1{font-size:2.6rem}.document{flex-wrap:wrap}.document .grow{min-width:170px}.section-title h2{font-size:1rem}.section-title>.button{font-size:.74rem}}
 .itinerary-main{min-width:0}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* A calmer, more consistent interface layered over the existing feature styles. */
+:root{color:#24312d;background:#f8f9f7;--green:#145b4e;--muted:#697871;--border:#e1e6e2;--warning:#805a17;--soft-green:#edf4ee;--radius:12px}
+body{color:#24312d;background:#f8f9f7}
+button{border-radius:9px;font-weight:600;transition:background .15s,border-color .15s,box-shadow .15s,color .15s}
+button:hover:not(:disabled){background:#f1f4f1}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #b27b12;outline-offset:3px}
+input,select,textarea{border-color:#cbd5cf;border-radius:9px}
+input:hover:not(:disabled),select:hover:not(:disabled),textarea:hover:not(:disabled){border-color:#98aaa0}
+.primary,.primary:hover:not(:disabled){background:#145b4e;border-color:#145b4e}
+.primary:hover:not(:disabled){background:#10493d}
+.panel{box-shadow:0 1px 2px #1e352708}
+.message{border-radius:10px}
+.error{color:#8e302b;background:#fff2f0;border-color:#ebc8c3}
+.warning{color:#765310;background:#fff8e9;border-color:#ead9b4}
+.success{color:#23653d;background:#edf6ef}
+.app-header{position:relative;background:#fff;border-bottom-color:#e4e9e5}
+.main-content{padding-top:36px}
+.trip-hero{margin-bottom:26px}
+.trip-dates{color:#5f7068}
+.timezone{color:#456b5c;background:#edf3ee}
+.summary-grid{gap:14px}
+.summary-card{position:relative;min-width:0;border-radius:12px;box-shadow:0 1px 2px #1e352708}
+.summary-card:hover:not(:disabled){background:#fff;border-color:#c7d4cb;box-shadow:0 3px 12px #1e352710}
+.summary-card small{color:#617169}
+.summary-icon{background:#edf4ee;color:#24634d}
+.summary-icon.amber{background:#fff5e3;color:#8b631e}
+.summary-icon.blue{background:#edf3f7;color:#466d86}
+.page-tabs{gap:22px}
+.page-tabs button{min-width:max-content;white-space:nowrap}
+.page-tabs button[aria-current=page]{color:#145b4e;border-bottom-width:3px}
+.page-tabs button:focus-visible{outline-offset:1px}
+.segmented{background:#eef1ed}
+.segmented button[aria-pressed=true]{color:#145b4e;box-shadow:0 1px 4px #1c3b271a}
+.sidebar-panel,.calendar-panel,.item-card,.checklist-panel,.document,.note-card{box-shadow:0 1px 2px #1e352708}
+.warning-panel{background:#fffcf5;border-color:#e9dfc8}
+.warning-panel h2{color:#805a17}
+.warning-list button{color:#725a31}
+.warning-list button:hover:not(:disabled){background:#fff8ec}
+.calendar-panel{padding:20px}
+.fc{--fc-border-color:#e7ece8;--fc-today-bg-color:#eff5ed;--fc-neutral-bg-color:#f7f9f7;--fc-page-bg-color:#fff;--fc-small-font-size:.74rem;color:#35453e}
+.fc .fc-toolbar-title{color:#263a32;font-weight:700}
+.fc .fc-button-primary{border-radius:8px;background:#fff;border-color:#dbe3dd;color:#295c4e}
+.fc .fc-button-primary:hover:not(:disabled){background:#eef4ef;border-color:#c6d6cb;color:#145b4e}
+.fc .fc-event{border:1px solid transparent;border-radius:5px;padding:3px 5px;font-weight:600;line-height:1.45;overflow-wrap:anywhere;white-space:normal}
+.fc .fc-event .fc-event-main,.fc .fc-event .fc-event-title,.fc .fc-event .fc-event-time{color:inherit}
+.fc .calendar-stay{--fc-event-text-color:#285538;background:#e6f0e5;border-color:#cbdcc9;color:#285538}
+.fc .calendar-transfer{--fc-event-text-color:#28526b;background:#e4eef5;border-color:#c8dce8;color:#28526b}
+.fc .calendar-activity{--fc-event-text-color:#705017;background:#fbf0d9;border-color:#efdfb9;color:#705017}
+.fc .fc-daygrid-event-dot{display:none}
+.fc .fc-daygrid-day-number{font-variant-numeric:tabular-nums}
+.day-strip button{border-radius:10px}
+.day-strip button[aria-pressed=true]{background:#145b4e;border-color:#145b4e}
+.day-stay{background:#f1f5ee;border-color:#dce7d8}
+.item-card{border-left-width:4px}
+.badge{font-weight:650}
+.status-toggle{border:1px solid #dfe6df}
+.item-warnings{background:#fff9ed}
+.item-warnings p{color:#765a24}
+.task-row{align-items:center}
+.task-row input{margin-top:0}
+.task-label{border-radius:7px}
+.dialog-overlay{background:#172e2475;backdrop-filter:blur(4px)}
+.dialog-content{background:#fff;border-radius:14px;border-color:#dce4de;padding:26px;box-shadow:0 22px 72px #112c2438;scrollbar-gutter:stable}
+.dialog-heading{position:sticky;top:-26px;z-index:2;background:#fff;padding:4px 0 14px;margin:0 0 12px;border-bottom:1px solid #e8ede9}
+.dialog-heading h2{color:#263a32}
+.dialog-heading p{color:#617169}
+.dialog-content form>p{margin-top:14px}
+.form-actions{position:sticky;bottom:-26px;z-index:2;background:#fff;padding:14px 0 2px;margin-top:18px;border-top:1px solid #e5ebe6}
+.field>span{font-weight:600;color:#35483f}
+.optional-section{margin:14px 0;border:1px solid #e3e9e4;border-radius:10px;background:#fcfdfc}
+.optional-section>summary{display:flex;align-items:center;gap:8px;padding:10px 12px;min-height:44px;font-weight:650;color:#354b40;list-style-position:inside}
+.optional-section>summary::marker{color:#628373}
+.optional-section[open]>summary{border-bottom:1px solid #e7ece8}
+.optional-section .form-grid,.optional-section>.field,.optional-section>.check-field,.optional-section>.section-content{margin:14px}
+.section-content>.field:last-child{margin-bottom:0}
+.section-count{margin-left:auto;color:#65756c;font-size:.72rem;font-weight:500}
+.attention-panel:focus{outline:3px solid #b27b12;outline-offset:4px}
+.document-context{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0}
+.document-context p{margin:0}
+.empty-state{background:#fff}
+.app-footer{color:#65756c}
+@media(max-width:760px){
+  .main-content{padding:26px 18px 16px}
+  .page-tabs{position:sticky;top:0;z-index:8;gap:8px;overflow-x:auto;scrollbar-width:thin;background:#f8f9f7;padding-top:3px}
+  .page-tabs button{flex:0 0 auto;padding:10px 8px 13px}
+  .summary-card{padding:14px}
+  .summary-grid{gap:10px}
+  .calendar-panel{padding:12px}
+  .fc{min-width:520px}
+}
+@media(max-width:480px){
+  .main-content{padding:30px 14px 16px}
+  .page-tabs{gap:3px}
+  .page-tabs button{font-size:.75rem;padding-inline:6px}
+  .summary-card{padding:11px 9px}
+  .summary-card small{font-size:.64rem}
+  .dialog-content{padding:18px 16px}
+  .dialog-heading{top:-18px}
+  .form-actions{bottom:-18px}
+  .day-strip{gap:4px}
+  .day-strip button{min-width:0;padding:9px 2px}
+}
+@media(max-width:360px){
+  .main-content{padding-inline:10px}
+  .summary-grid{gap:6px}
+  .summary-card{padding:9px 7px}
+  .summary-icon{width:26px;height:26px}
+}
