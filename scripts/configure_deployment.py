@@ -25,6 +25,7 @@ def main():
                 f"THAILAND_SHARED_ACCOUNT_EMAIL={args.email}\n"
                 f"THAILAND_ALLOWED_ORIGINS={','.join(args.origin)}\n"
                 f"THAILAND_LOGIN_HMAC_SECRET={secrets.token_urlsafe(48)}\n"
+                "THAILAND_LOGIN_TRUSTED_IP_HEADER=cf-connecting-ip\n"
             )
         subprocess.run(
             ["supabase", "secrets", "set", "--project-ref", args.project_ref, "--env-file", str(path)],

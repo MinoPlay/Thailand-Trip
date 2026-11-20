@@ -120,7 +120,7 @@ Set **new, prefixed** secrets without overwriting another app's secrets:
 | `THAILAND_SHARED_ACCOUNT_EMAIL` | Email of the dedicated confirmed user |
 | `THAILAND_ALLOWED_ORIGINS` | Comma-separated exact browser origins, e.g. your HTTPS site and explicitly needed local origin; no wildcard or trailing slash |
 | `THAILAND_LOGIN_HMAC_SECRET` | At least 32 cryptographically random characters, server-only |
-| `THAILAND_LOGIN_TRUSTED_IP_HEADER` | Omit by default; see the trust requirements below |
+| `THAILAND_LOGIN_TRUSTED_IP_HEADER` | `cf-connecting-ip` on hosted Supabase (verified below) |
 
 `SUPABASE_URL`, `SUPABASE_ANON_KEY` and `SUPABASE_SERVICE_ROLE_KEY` are provided
 by the Supabase runtime. The service key must never be in a `VITE_*` variable,
@@ -172,6 +172,12 @@ proof of trust. If bypass cannot be prevented, leave the setting absent.
 Lists, missing values, invalid addresses and scoped IPv6 fall into the shared
 unattributed bucket; valid IPv6 is canonicalized and all sources are HMAC-SHA256
 hashed. Arbitrary header names and `X-Forwarded-For` are not supported.
+
+**Hosted Supabase (verified 2026-11-20):** Edge Functions sit behind Cloudflare,
+which sets `CF-Connecting-IP` to the real client address and rejects requests
+that supply their own copy (Cloudflare error 1000). The deployment therefore
+sets `THAILAND_LOGIN_TRUSTED_IP_HEADER=cf-connecting-ip`, so each visitor gets
+their own 5/15-minute bucket and one person cannot lock everyone else out.
 
 The project's public Auth password endpoint still exists for its other apps.
 Someone who learns the shared email can call it directly, bypassing this Edge
