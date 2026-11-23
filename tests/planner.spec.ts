@@ -142,6 +142,14 @@ test('calendar navigation keeps the selected month when switching to the daily a
   await page.getByRole('button', { name: 'day', exact: true }).click()
   await expect(page.locator('.date-nav input')).toHaveValue('2030-02-01')
 })
+test('calendar view defaults to month and the last choice survives a reload', async ({ page }) => {
+  await mockBackend(page)
+  await expect(page.locator('.fc-dayGridMonth-view')).toBeVisible()
+  await page.getByRole('button', { name: 'week', exact: true }).click()
+  await page.reload()
+  await expect(page.locator('.fc-timeGridWeek-view')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'week', exact: true })).toHaveAttribute('aria-pressed', 'true')
+})
 test('calendar event labels meet readable text contrast', async ({ page }) => {
   await mockBackend(page)
   await page.getByRole('button', { name: 'month', exact: true }).click()

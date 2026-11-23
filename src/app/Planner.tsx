@@ -21,6 +21,15 @@ const Calendar = lazy(() => import('../features/calendar/Calendar').then(module 
 
 type Editor = { kind: 'item'; type: ItemType; item?: Item } | { kind: 'task'; task?: Task } | { kind: 'note'; note?: Note; itemId?: string } | { kind: 'trip' }
 type Page = 'itinerary' | 'checklist' | 'notes' | 'documents' | 'review'
+type View = 'day' | 'week' | 'month'
+const VIEW_KEY = 'thailand-planner:view'
+function storedView(): View {
+  try {
+    const value = localStorage.getItem(VIEW_KEY)
+    if (value === 'day' || value === 'week' || value === 'month') return value
+  } catch { /* storage unavailable */ }
+  return 'month'
+}
 function fields<T extends { id: string; version: number; created_at: string; updated_at: string }>(record: T): Omit<T, 'id' | 'version' | 'created_at' | 'updated_at'> {
   const { id, version, created_at, updated_at, ...rest } = record
   void id; void version; void created_at; void updated_at
@@ -64,7 +73,10 @@ function PlannerContent({ data, online, live, refreshing, error, onRefresh, onCh
     return now >= trip.start_date && now <= trip.end_date ? now : trip.start_date
   })
   const [page, setPage] = useState<Page>('itinerary')
-  const [view, setView] = useState<'day' | 'week' | 'month'>('day')
+  const [view, setView] = useState<View>(storedView)
+  useEffect(() => {
+    try { localStorage.setItem(VIEW_KEY, view) } catch { /* storage unavailable */ }
+  }, [view])
   const [editor, setEditor] = useState<Editor | null>(null)
   const [addMenu, setAddMenu] = useState(false)
   const [documentItemId, setDocumentItemId] = useState<string | null>(null)
