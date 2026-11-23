@@ -59,3 +59,7 @@ export function safeUrl(value: string) {
   }
   throw new Error('Links must be full http:// or https:// addresses.')
 }
+export function shortTime(instant: string, zone: string, date: string, tripZone: string) {
+  const time = DateTime.fromISO(instant, { zone })
+  return time.toFormat(zonedDate(instant, tripZone) === date ? 'HH:mm' : 'd LLL HH:mm') + (zone === tripZone ? '' : ` ${time.toFormat('ZZZZ')}`)
+}

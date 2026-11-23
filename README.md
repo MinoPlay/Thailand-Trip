@@ -4,7 +4,7 @@ A private, shared travel planner with a responsive React interface, GitHub Pages
 
 ## What is included
 
-- Month and week calendars plus a mobile-first daily agenda.
+- Workspace layout: sidebar navigation, a day-by-day hour timeline with an item inspector, plus week and month calendars. On phones it switches to bottom tabs and a details sheet.
 - Overnight accommodation, distinct transfer legs, activities, booking/provider details, and safe map links.
 - Shared checklist, trip/item notes, and private PDF/image attachments.
 - Missing-information warnings, preparation states, and checkmarks.

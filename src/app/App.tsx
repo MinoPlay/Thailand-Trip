@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import type { Session } from '@supabase/supabase-js'
 import { useQueryClient } from '@tanstack/react-query'
-import { ArrowRight, Palmtree, LockKeyhole } from 'lucide-react'
+import { ArrowRight, CalendarDays, ClipboardList, LockKeyhole, Palmtree, RefreshCw } from 'lucide-react'
 import { configured, client, supabase } from '../lib/supabase'
 import { functionError } from '../lib/api'
 import { ErrorMessage, Field } from '../components/Feedback'
@@ -33,15 +33,25 @@ export function App() {
     })
     return () => { active = false; data.subscription.unsubscribe() }
   }, [cache])
-  if (loading) return <main className="auth-page"><p role="status">Opening your trip…</p></main>
-  if (session) return <Suspense fallback={<main className="auth-page"><p role="status">Opening the planner…</p></main>}><Planner userId={session.user.id} /></Suspense>
+  if (loading) return <main className="loading-page"><p role="status">Opening your trip…</p></main>
+  if (session) return <Suspense fallback={<main className="loading-page"><p role="status">Opening the planner…</p></main>}><Planner userId={session.user.id} /></Suspense>
   return <main className="auth-page">
-    <div className="auth-illustration" aria-hidden="true"><div className="sun" /><div className="island"><Palmtree size={160} strokeWidth={1} /></div><div className="travel-stamp">A LITTLE PLANNING.<br />A GREAT ADVENTURE.</div></div>
+    <section className="auth-art" aria-labelledby="auth-title">
+      <div className="brand"><span className="brand-mark"><Palmtree size={18} /></span> together / thailand</div>
+      <div>
+        <p className="eyebrow">Shared trip workspace</p>
+        <h1 id="auth-title">Plan the trip, not the group chat.</h1>
+        <p className="intro">Our places to stay, ways to get there, and things we can’t wait to do. All in one shared plan.</p>
+      </div>
+      <ul className="auth-features">
+        <li><CalendarDays size={18} /> Day-by-day timeline across time zones</li>
+        <li><ClipboardList size={18} /> Shared checklist, notes and documents</li>
+        <li><RefreshCw size={18} /> Live updates when anyone makes a change</li>
+      </ul>
+    </section>
     <section className="auth-card">
-      <div className="brand"><Palmtree size={24} /> together / thailand</div>
-      <p className="eyebrow">LESS LOGISTICS, MORE ADVENTURE</p>
-      <h1>One trip.<br />All the little details.</h1>
-      <p className="intro">Our places to stay, ways to get there, and things we can’t wait to do. All in one shared plan.</p>
+      <h2>Welcome back</h2>
+      <p className="muted">Enter the trip password to open the shared plan.</p>
       {!configured ? <div className="message warning"><strong>Connect your trip</strong><p>This site needs its Supabase project URL and public publishable key. Follow the repository setup instructions, then rebuild the site. No trip data is available until setup is complete.</p></div> :
         <form onSubmit={async event => {
           event.preventDefault()

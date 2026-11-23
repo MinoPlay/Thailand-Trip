@@ -63,9 +63,13 @@ async function mockBackend(page: Page, loggedIn = true) {
   await page.goto('/')
   return { data, conflict: () => { conflict = true }, fail: () => { saveFailure = true } }
 }
+async function openFerry(page: Page) {
+  await page.getByRole('button', { name: 'day', exact: true }).click()
+  await page.locator('.timeline-event', { hasText: 'Sample ferry' }).click()
+}
 test('password-only login opens the private plan and logout hides it', async ({ page }) => {
   await mockBackend(page, false)
-  await expect(page.getByRole('heading', { name: 'One trip. All the little details.' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Plan the trip, not the group chat.' })).toBeVisible()
   await expect(page.getByText('Sample trip', { exact: true })).not.toBeVisible()
   await page.getByLabel('Trip password').fill('test-password')
   await page.getByRole('button', { name: 'Open our trip' }).click()
@@ -75,9 +79,10 @@ test('password-only login opens the private plan and logout hides it', async ({ 
 })
 test('calendar, agenda, checklist, and item creation work on both layouts', async ({ page }) => {
   const backend = await mockBackend(page)
-  await page.getByRole('button', { name: 'day', exact: true }).click()
+  await openFerry(page)
   await expect(page.getByRole('heading', { name: 'Sample ferry' })).toBeVisible()
-  await expect(page.getByText('Pier A', { exact: false })).toBeVisible()
+  await expect(page.locator('.item-detail').getByText('Pier A', { exact: false })).toBeVisible()
+  await page.getByRole('button', { name: 'Close details' }).click()
   await page.getByRole('button', { name: 'week', exact: true }).click()
   await expect(page.locator('.fc-timeGridWeek-view')).toBeVisible()
   await page.getByRole('button', { name: 'month', exact: true }).click()
@@ -94,7 +99,7 @@ test('calendar, agenda, checklist, and item creation work on both layouts', asyn
 })
 test('failed and conflicting saves preserve the draft and require explicit reapply', async ({ page }) => {
   const backend = await mockBackend(page)
-  await page.getByRole('button', { name: 'day', exact: true }).click()
+  await openFerry(page)
   await page.getByRole('button', { name: 'Edit Sample ferry' }).click()
   await page.getByLabel('Title', { exact: true }).fill('My ferry draft')
   backend.conflict()
@@ -126,7 +131,7 @@ test('a calendar loading failure preserves access to the loaded daily agenda', a
   await mockBackend(page)
   await page.getByRole('button', { name: 'week', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('This view could not load.')
-  await page.getByRole('button', { name: 'day', exact: true }).click()
+  await openFerry(page)
   await expect(page.getByRole('heading', { name: 'Sample ferry' })).toBeVisible()
 })
 test('calendar navigation keeps the selected month when switching to the daily agenda', async ({ page }) => {
@@ -178,7 +183,7 @@ test('the review summary opens the attention list from another section', async (
 })
 test('item document links filter files and offer a way back to all documents', async ({ page }) => {
   await mockBackend(page)
-  await page.getByRole('button', { name: 'day', exact: true }).click()
+  await openFerry(page)
   await page.getByRole('button', { name: '1 document' }).click()
   await expect(page.getByRole('heading', { name: 'Documents for Sample ferry' })).toBeVisible()
   await expect(page.getByText('Ferry ticket.pdf')).toBeVisible()
@@ -188,7 +193,7 @@ test('item document links filter files and offer a way back to all documents', a
 })
 test('collapsed optional fields remain intact when an item is saved', async ({ page }) => {
   const backend = await mockBackend(page)
-  await page.getByRole('button', { name: 'day', exact: true }).click()
+  await openFerry(page)
   await page.getByRole('button', { name: 'Edit Sample ferry' }).click()
   await expect(page.getByText('Booking & preparation')).toBeVisible()
   await page.getByRole('button', { name: 'Save changes' }).click()
@@ -214,7 +219,7 @@ test('invalid fields inside a collapsed section reveal that section', async ({ p
 })
 test('closing a changed editor confirms before discarding the draft', async ({ page }) => {
   await mockBackend(page)
-  await page.getByRole('button', { name: 'day', exact: true }).click()
+  await openFerry(page)
   await page.getByRole('button', { name: 'Edit Sample ferry' }).click()
   await page.getByLabel('Title', { exact: true }).fill('Unsaved ferry draft')
   let confirmShown = false
