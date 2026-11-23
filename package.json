@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "typecheck": "tsc -b --pretty false"
+    "typecheck": "tsc -b --pretty false",
+    "prototype": "vite --host 127.0.0.1 --open /prototype.html?variant=A"
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.19",

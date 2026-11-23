@@ -1,0 +1,85 @@
+/* PROTOTYPE ONLY: Variant A "Travel journal" styles, scoped to .va */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..800;1,9..144,400..700&family=Inter:wght@400;500;600&display=swap');
+
+.va{--ink:#2b2320;--paper:#f6f0e6;--card:#fffaf2;--line:#e4d8c6;--terra:#c0532f;--teal:#1d5c5a;--muted:#8a7c6e;min-height:100vh;background:var(--paper);color:var(--ink);font:400 16px/1.6 Inter,system-ui,sans-serif}
+.va *{box-sizing:border-box}
+.va h1,.va h2,.va h3,.va h4{font-family:Fraunces,Georgia,serif;font-weight:600;margin:0;letter-spacing:-.01em}
+.va button{font:inherit;cursor:pointer}
+.va-kicker{font:600 12px/1 Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--terra);margin:0 0 18px}
+.va-meta{color:var(--muted);font-size:14px;margin:4px 0 14px}
+
+.va-login{display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 85% 10%,#f3c9a4 0,transparent 35%),radial-gradient(circle at 10% 90%,#bcd6cf 0,transparent 35%),var(--paper)}
+.va-login-inner{max-width:460px;width:100%}
+.va-login h1{font-size:clamp(48px,9vw,84px);line-height:.95;margin-bottom:22px}
+.va-login h1 em{color:var(--teal);font-weight:500}
+.va-lede{font-size:18px;color:#5b4e44;margin:0 0 32px}
+.va-login form{display:grid;gap:14px}
+.va-login label{display:grid;gap:6px;font-size:13px;font-weight:600}
+.va-login input{border:0;border-bottom:2px solid var(--ink);background:transparent;padding:12px 0;font:400 20px Fraunces,serif;outline:none}
+.va-login input:focus{border-color:var(--terra)}
+.va-primary{display:inline-flex;align-items:center;justify-content:center;gap:10px;border:0;background:var(--ink);color:var(--paper);padding:16px 22px;border-radius:999px;font-weight:600;margin-top:10px}
+.va-primary:hover{background:var(--terra)}
+.va-fine{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted);margin-top:22px}
+
+.va-bar{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 28px;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.va-mark{font:600 18px Fraunces,serif}.va-mark span{color:var(--terra);margin:0 2px}
+.va-bar nav{display:flex;gap:4px}
+.va-bar nav button{border:0;background:none;padding:8px 12px;color:var(--muted);font-weight:500;border-bottom:2px solid transparent}
+.va-bar nav button[aria-current]{color:var(--ink);border-color:var(--terra)}
+.va-sync{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}.va-sync span{width:7px;height:7px;border-radius:50%;background:#3a9a6a}
+
+.va-page{max-width:780px;margin:0 auto;padding:56px 24px 140px}
+.va-hero h1{font-size:clamp(44px,8vw,76px);line-height:1;margin-bottom:28px}
+.va-route{list-style:none;display:flex;flex-wrap:wrap;gap:0;padding:0;margin:0 0 48px}
+.va-route li{display:flex;flex-direction:column;padding:0 28px 0 0;margin-right:28px;border-right:1px solid var(--line)}
+.va-route li:last-child{border:0}
+.va-route strong{font:600 22px Fraunces,serif}.va-route span{font-size:13px;color:var(--muted)}
+
+.va-before{display:grid;grid-template-columns:1fr 1fr;gap:32px;padding:28px 0;border-top:2px solid var(--ink);border-bottom:1px solid var(--line);margin-bottom:56px}
+.va-before h2{font-size:24px;display:flex;gap:8px;align-items:center}
+.va-checks{list-style:none;padding:0;margin:0;display:grid;gap:10px}
+.va-checks li{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.va-checks small{color:var(--muted);font-size:12px}
+.va-checks button{flex:none;width:18px;height:18px;border:1.5px solid var(--ink);border-radius:4px;background:none;padding:0;display:grid;place-items:center;transform:translateY(3px)}
+.va-checks li.done{color:var(--muted);text-decoration:line-through}.va-checks li.done button{background:var(--teal);border-color:var(--teal);color:#fff}
+.va-checks.big{gap:16px;font-size:18px}
+.va-margin{background:#fbe9d8;margin:-28px 0;padding:28px 24px;border-left:3px solid var(--terra)}
+.va-margin h2{color:var(--terra)}
+.va-margin ul{padding:0;margin:0;list-style:none;display:grid;gap:10px;font-size:14px}
+.va-margin small{display:block;font-weight:600;color:var(--terra);font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+
+.va-days{list-style:none;padding:0;margin:0}
+.va-day{position:relative;padding:0 0 40px 0}
+.va-day-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid var(--line)}
+.va-day-no{font:600 12px Inter;letter-spacing:.12em;text-transform:uppercase;color:var(--terra);min-width:56px}
+.va-day h3{font-size:26px}
+.va-sleep{margin-left:auto;display:flex;gap:6px;align-items:center;font-size:13px;color:var(--teal);font-weight:500}
+.va-entries{list-style:none;padding:0;margin:0;display:grid;gap:18px}
+.va-entry{display:grid;grid-template-columns:70px 1fr;gap:14px}
+.va-entry time{font:500 15px Fraunces,serif;color:var(--muted);padding-top:2px}
+.va-entry h4{font-size:20px;display:flex;align-items:center;gap:8px}
+.va-entry.transfer h4 svg{color:var(--teal)}.va-entry.activity h4 svg{color:var(--terra)}
+.va-entry p{margin:2px 0 0;color:#5b4e44;font-size:15px}
+.va-entry blockquote,.va-note{margin:10px 0 0;padding:4px 0 4px 14px;border-left:2px solid var(--teal);font:italic 400 16px Fraunces,serif;color:#4a3f37}
+.va-flag{display:inline-flex !important;gap:6px;align-items:center;color:var(--terra) !important;font-weight:500;font-size:13px !important;margin-top:8px !important}
+.va-free{color:var(--muted);font-style:italic;margin:0 0 0 84px}
+.va-free button{border:0;background:none;color:var(--terra);font-style:normal;font-weight:600;display:inline-flex;align-items:center;gap:4px}
+.va-someday{padding-top:28px;border-top:2px solid var(--ink)}
+.va-someday h2,.va-section h2{font-size:32px}
+.va-someday ul{list-style:none;padding:0;display:grid;gap:10px}
+.va-someday li{display:flex;gap:8px;align-items:center}.va-someday small{color:var(--muted)}
+.va-section{border-top:2px solid var(--ink);padding-top:28px;display:grid;gap:18px}
+.va-note{font-size:20px;padding:8px 0 8px 18px}.va-note cite{display:block;font:normal 500 12px Inter;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:6px}
+.va-docs{list-style:none;padding:0;margin:0}.va-docs li{display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--line)}
+.va-docs span{flex:1;display:grid}.va-docs small{color:var(--muted)}
+.va-foot{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:13px;margin-top:60px}
+.va-fab{position:fixed;right:28px;bottom:80px;display:flex;gap:8px;align-items:center;border:0;background:var(--terra);color:#fff;padding:14px 20px;border-radius:999px;font-weight:600;box-shadow:0 10px 30px #c0532f55}
+
+@media (max-width:700px){
+  .va-bar{padding:12px 16px;flex-wrap:wrap}.va-bar nav{order:3;width:100%;overflow-x:auto}
+  .va-page{padding-top:32px}
+  .va-before{grid-template-columns:1fr}.va-margin{margin:0}
+  .va-entry{grid-template-columns:52px 1fr}.va-free{margin-left:0}
+  .va-sleep{margin-left:0;width:100%}
+  .va-fab{right:16px;bottom:76px;padding:14px}
+}
